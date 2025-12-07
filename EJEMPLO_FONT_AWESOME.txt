@@ -1,0 +1,109 @@
+================================================================================
+CÓMO USAR FONT AWESOME EN TU PROYECTO
+================================================================================
+
+Paquetes instalados:
+- @fortawesome/fontawesome-svg-core
+- @fortawesome/free-solid-svg-icons (iconos sólidos)
+- @fortawesome/free-regular-svg-icons (iconos regulares)
+- @fortawesome/react-fontawesome
+
+================================================================================
+EJEMPLO BÁSICO DE USO
+================================================================================
+
+1. Importar el componente FontAwesomeIcon y el icono que necesites:
+
+```javascript
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { faStar } from '@fortawesome/free-solid-svg-icons';
+```
+
+2. Usar el icono en tu componente:
+
+```jsx
+<FontAwesomeIcon icon={faStar} />
+```
+
+3. Con estilos personalizados:
+
+```jsx
+<FontAwesomeIcon icon={faStar} className="text-yellow-400" size="lg" />
+```
+
+================================================================================
+EJEMPLO PARA TU MovieCard.jsx
+================================================================================
+
+Reemplazar el emoji ⭐ por un icono de Font Awesome:
+
+```javascript
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { faStar } from '@fortawesome/free-solid-svg-icons';
+
+// En el JSX:
+<p className="text-neutral-50 text-sm mb-1">
+  <FontAwesomeIcon icon={faStar} className="text-yellow-400 mr-1" />
+  {movie.vote_average} ({movie.vote_count} votos)
+</p>
+```
+
+================================================================================
+ICONOS ÚTILES PARA TU PROYECTO
+================================================================================
+
+Iconos sólidos (free-solid-svg-icons):
+- faStar (estrella)
+- faStarHalf (media estrella)
+- faSearch (búsqueda)
+- faTimes (cerrar/X)
+- faChevronLeft (flecha izquierda)
+- faChevronRight (flecha derecha)
+- faCalendar (calendario)
+- faUser (usuario)
+- faHeart (corazón)
+- faBookmark (marcador)
+
+Iconos regulares (free-regular-svg-icons):
+- faStar (estrella vacía)
+- faHeart (corazón vacío)
+- faBookmark (marcador vacío)
+
+================================================================================
+TAMAÑOS DISPONIBLES
+================================================================================
+
+<FontAwesomeIcon icon={faStar} size="xs" />   // Extra pequeño
+<FontAwesomeIcon icon={faStar} size="sm" />   // Pequeño
+<FontAwesomeIcon icon={faStar} />              // Normal (por defecto)
+<FontAwesomeIcon icon={faStar} size="lg" />   // Grande
+<FontAwesomeIcon icon={faStar} size="xl" />   // Extra grande
+<FontAwesomeIcon icon={faStar} size="2x" />   // 2x
+<FontAwesomeIcon icon={faStar} size="3x" />   // 3x
+
+O con clases de Tailwind:
+<FontAwesomeIcon icon={faStar} className="w-4 h-4" />
+
+================================================================================
+ICONOS DE MARCAS (OPCIONAL)
+================================================================================
+
+Si necesitas iconos de marcas (Facebook, Twitter, etc.), instala:
+
+npm install --save @fortawesome/free-brands-svg-icons
+
+Y úsalos así:
+import { faFacebook, faTwitter } from '@fortawesome/free-brands-svg-icons';
+
+================================================================================
+BUSCAR ICONOS
+================================================================================
+
+Puedes buscar todos los iconos disponibles en:
+https://fontawesome.com/icons
+
+Cuando encuentres un icono, busca su nombre exacto y úsalo así:
+import { faNombreDelIcono } from '@fortawesome/free-solid-svg-icons';
+
+================================================================================
+

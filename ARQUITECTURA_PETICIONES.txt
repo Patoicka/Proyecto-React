@@ -1,0 +1,304 @@
+================================================================================
+ARQUITECTURA Y MEJORES PRÁCTICAS PARA PETICIONES API
+================================================================================
+
+================================================================================
+1. DIFERENCIA ENTRE API KEY Y ACCESS TOKEN
+================================================================================
+
+API KEY (v3 auth):
+- Se usa en la URL como query parameter: ?api_key=TU_API_KEY
+- Para TMDB, generalmente solo necesitas esto
+- Se usa para autenticación básica
+
+READ ACCESS TOKEN (v4 auth):
+- Se usa en el header: Authorization: Bearer TU_ACCESS_TOKEN
+- Es más seguro y moderno
+- Si tienes ambos, puedes usar el token en headers
+
+NOTA: Para TMDB, si tienes read access token, puedes usarlo así:
+  headers: {
+    'Authorization': 'Bearer TU_ACCESS_TOKEN'
+  }
+
+================================================================================
+2. ESTRUCTURA RECOMENDADA PARA TU PROYECTO
+================================================================================
+
+Para un proyecto de práctica con React (sin Redux), la mejor estructura es:
+
+src/
+  ├── services/          ← AQUÍ VAN TUS PETICIONES
+  │   ├── movieApi.js    ← Funciones de petición a la API
+  │   └── apiConfig.js   ← Configuración (base URL, headers, etc.)
+  ├── components/        ← Componentes React
+  ├── utils/             ← Funciones helper (opcional)
+  └── ...
+
+================================================================================
+3. ¿SERVICIOS, SDK O THUNKS?
+================================================================================
+
+SERVICIOS (RECOMENDADO para tu proyecto):
+✅ Simple y directo
+✅ Fácil de entender
+✅ Perfecto para proyectos pequeños/medianos
+✅ No requiere librerías adicionales
+✅ Separación clara de responsabilidades
+
+SDK (Software Development Kit):
+- Es una librería completa que abstrae toda la API
+- Generalmente la crea el proveedor de la API
+- Para TMDB hay SDKs de terceros, pero no es necesario
+- Útil si la API es muy compleja
+
+THUNKS (Redux):
+- Son funciones asíncronas para Redux
+- Solo necesitas esto si usas Redux para manejo de estado global
+- Para tu proyecto de práctica, es OVERKILL (demasiado complejo)
+- Se usan cuando tienes estado global complejo que compartir entre muchos componentes
+
+CONCLUSIÓN: Usa SERVICIOS para tu proyecto.
+
+================================================================================
+4. ESTRUCTURA RECOMENDADA DE ARCHIVOS
+================================================================================
+
+OPCIÓN 1: Todo en un archivo (simple, para empezar)
+src/services/movieApi.js
+
+OPCIÓN 2: Separado por responsabilidades (mejor práctica)
+src/services/
+  ├── apiConfig.js      ← Configuración (API_KEY, BASE_URL, headers)
+  ├── movieApi.js       ← Funciones de petición (searchMovies, getPopular, etc.)
+  └── imageUtils.js     ← Helpers para imágenes (opcional)
+
+================================================================================
+5. EJEMPLO DE ESTRUCTURA COMPLETA
+================================================================================
+
+ARCHIVO 1: src/services/apiConfig.js
+------------------------------------
+// Configuración centralizada de la API
+
+const API_KEY = import.meta.env.VITE_API_KEY;
+const ACCESS_TOKEN = import.meta.env.VITE_ACCESS_TOKEN; // Si lo tienes
+const BASE_URL = 'https://api.themoviedb.org/3';
+const IMAGE_BASE_URL = 'https://image.tmdb.org/t/p/w500';
+
+// Headers para peticiones (si usas access token)
+export const getHeaders = () => {
+  const headers = {
+    'Content-Type': 'application/json',
+  };
+  
+  // Si tienes access token, úsalo en lugar de API key
+  if (ACCESS_TOKEN) {
+    headers['Authorization'] = `Bearer ${ACCESS_TOKEN}`;
+  }
+  
+  return headers;
+};
+
+// Función helper para construir URLs
+export const buildApiUrl = (endpoint, params = {}) => {
+  const url = new URL(`${BASE_URL}${endpoint}`);
+  
+  // Si usas API_KEY (no token), agrégala como query param
+  if (API_KEY && !ACCESS_TOKEN) {
+    url.searchParams.append('api_key', API_KEY);
+  }
+  
+  // Agregar otros parámetros
+  Object.entries(params).forEach(([key, value]) => {
+    if (value) {
+      url.searchParams.append(key, value);
+    }
+  });
+  
+  return url.toString();
+};
+
+export { BASE_URL, IMAGE_BASE_URL, API_KEY };
+
+
+ARCHIVO 2: src/services/movieApi.js
+------------------------------------
+// Funciones de petición a la API de películas
+
+import { buildApiUrl, getHeaders, IMAGE_BASE_URL } from './apiConfig';
+
+// Función genérica para hacer peticiones
+const fetchFromApi = async (endpoint, params = {}) => {
+  try {
+    const url = buildApiUrl(endpoint, params);
+    const options = {
+      method: 'GET',
+      headers: getHeaders(),
+    };
+    
+    const response = await fetch(url, options);
+    
+    if (!response.ok) {
+      throw new Error(`Error ${response.status}: ${response.statusText}`);
+    }
+    
+    return await response.json();
+  } catch (error) {
+    console.error('Error en petición API:', error);
+    throw error;
+  }
+};
+
+// Buscar películas
+export const searchMovies = async (query, page = 1) => {
+  if (!query.trim()) return { results: [], total_results: 0 };
+  
+  const data = await fetchFromApi('/search/movie', {
+    query: query,
+    language: 'es-ES',
+    page: page,
+  });
+  
+  return data;
+};
+
+// Obtener películas populares
+export const getPopularMovies = async (page = 1) => {
+  const data = await fetchFromApi('/movie/popular', {
+    language: 'es-ES',
+    page: page,
+  });
+  
+  return data;
+};
+
+// Obtener detalles de una película
+export const getMovieDetails = async (movieId) => {
+  const data = await fetchFromApi(`/movie/${movieId}`, {
+    language: 'es-ES',
+  });
+  
+  return data;
+};
+
+// Helper para construir URL de imagen
+export const getImageUrl = (posterPath, size = 'w500') => {
+  if (!posterPath) {
+    return 'https://via.placeholder.com/500x750?text=Sin+imagen';
+  }
+  return `${IMAGE_BASE_URL.replace('w500', size)}${posterPath}`;
+};
+
+
+ARCHIVO 3: .env (en la raíz del proyecto)
+------------------------------------
+VITE_API_KEY=tu_api_key_aqui
+VITE_ACCESS_TOKEN=tu_access_token_aqui  # Opcional, solo si lo tienes
+
+
+ARCHIVO 4: .gitignore (asegúrate de que tenga)
+------------------------------------
+.env
+.env.local
+.env.*.local
+
+================================================================================
+6. VENTAJAS DE ESTA ESTRUCTURA
+================================================================================
+
+✅ Separación de responsabilidades
+✅ Fácil de mantener y escalar
+✅ Configuración centralizada (cambias la API key en un solo lugar)
+✅ Reutilizable (fetchFromApi puede usarse para cualquier endpoint)
+✅ Fácil de testear
+✅ Manejo de errores consistente
+✅ Soporta tanto API key como access token
+
+================================================================================
+7. CÓMO USAR EN TUS COMPONENTES
+================================================================================
+
+En Layout.jsx o cualquier componente:
+
+import { searchMovies, getPopularMovies } from '../services/movieApi';
+
+// En un useEffect o función:
+const loadMovies = async () => {
+  try {
+    setLoading(true);
+    const data = await searchMovies('batman');
+    setMovies(data.results);
+  } catch (error) {
+    console.error('Error:', error);
+    // Manejar error (mostrar mensaje al usuario, etc.)
+  } finally {
+    setLoading(false);
+  }
+};
+
+================================================================================
+8. CUÁNDO USAR THUNKS (si en el futuro usas Redux)
+================================================================================
+
+Solo necesitarías thunks si:
+- Usas Redux para manejo de estado global
+- Necesitas compartir el estado de películas entre muchos componentes
+- Tienes lógica compleja de estado que requiere Redux
+
+Para tu proyecto de práctica actual, NO necesitas thunks.
+
+Estructura con thunks sería:
+src/
+  ├── store/
+  │   ├── slices/
+  │   │   └── movieSlice.js
+  │   └── thunks/
+  │       └── movieThunks.js  ← Aquí irían las peticiones async
+
+Pero esto es demasiado complejo para un proyecto de práctica simple.
+
+================================================================================
+9. RESUMEN Y RECOMENDACIÓN FINAL
+================================================================================
+
+PARA TU PROYECTO DE PRÁCTICA:
+
+1. Crea: src/services/apiConfig.js (configuración)
+2. Crea: src/services/movieApi.js (funciones de petición)
+3. Crea: .env (tus credenciales)
+4. Actualiza: .gitignore (para no subir .env)
+
+ESTRUCTURA SIMPLE Y EFECTIVA:
+- Servicios para peticiones ✅
+- Componentes para UI ✅
+- useState/useEffect para estado local ✅
+
+NO necesitas:
+- Thunks (a menos que uses Redux)
+- SDK (puedes hacerlo manualmente)
+- Librerías adicionales (fetch nativo es suficiente)
+
+================================================================================
+10. EJEMPLO MÍNIMO PARA EMPEZAR
+================================================================================
+
+Si quieres empezar simple, todo en un archivo:
+
+src/services/movieApi.js:
+--------------------------
+const API_KEY = import.meta.env.VITE_API_KEY;
+const BASE_URL = 'https://api.themoviedb.org/3';
+
+export const searchMovies = async (query) => {
+  const response = await fetch(
+    `${BASE_URL}/search/movie?api_key=${API_KEY}&query=${encodeURIComponent(query)}&language=es-ES`
+  );
+  const data = await response.json();
+  return data.results;
+};
+
+Y listo. Puedes refactorizar después a la estructura más completa.
+
+================================================================================
+
