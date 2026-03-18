@@ -38,6 +38,30 @@ export const getPopularMovies = async (page = 1) => {
   return data;
 };
 
+export const getTopRatedMovies = async (page = 1) => {
+  const data = await fetchFromApi("/movie/top_rated", {
+    language: "es-ES",
+    page: page,
+  });
+  return data;
+};
+
+export const getNowPlayingMovies = async (page = 1) => {
+  const data = await fetchFromApi("/movie/now_playing", {
+    language: "es-ES",
+    page: page,
+  });
+  return data;
+};
+
+export const getDiscoverMovies = async (page = 1) => {
+  const data = await fetchFromApi("/discover/movie", {
+    language: "es-ES",
+    page: page,
+  });
+  return data;
+};
+
 export const getMovieDetails = async (movieId) => {
   const data = await fetchFromApi(`/movie/${movieId}`, {
     language: "es-ES",

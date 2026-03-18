@@ -6,10 +6,12 @@ export const MovieCard = ({ movie }) => {
   const [isOpen, setIsOpen] = useState(false);
   const imageUrl = getImageUrl(movie.poster_path);
 
+
+
   return (
     <>
-      <div 
-        className="w-full max-w-sm mx-auto rounded-md mb-5 border border-gray-600 overflow-hidden cursor-pointer hover:border-gray-400 transition-colors" 
+      <div
+        className="w-full max-w-sm mx-auto rounded-md mb-5 border border-gray-600 overflow-hidden cursor-pointer hover:border-gray-400 transition-colors"
         onClick={() => setIsOpen(true)}
       >
         <img
